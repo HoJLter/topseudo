@@ -1,7 +1,8 @@
 import json
 from os.path import exists
 
-config_structure = {
+
+settings_structure = {
     "key": "",
     "localisation": "",
     "pseudocode-type": ""
@@ -15,20 +16,34 @@ class Settings:
             cls.__instance = super(Settings, cls).__new__(cls)
         return cls.__instance
 
-    def __setitem__(self, key, value):
-        with open("settings.json", "w+") as file:
-            settings = json.load(file)
-            settings[key] = value
 
-    @staticmethod
-    def init_settings():
-        if exists("settings.json"):
-            raise FileExistsError
+    def __init__(self):
+        if exists('settings.json'):
+            with open("settings.json", 'r+') as file:
+                settings_data: dict = json.load(file)
+                if not settings_data.values():
+                    print("нет значений")
+                    json.dump(settings_structure, file)
         else:
-            with open("settings.json", "w") as file:
-                json.dump(config_structure, file, indent=4)
+            print("нет файла")
+            with open("settings.json", 'w') as file:
+                json.dump(settings_structure, file)
+
+
+    @property
+    def key(self):
+        with open("settings.json", 'r') as file:
+            settings_data = json.load(file)
+            return settings_data['key']
+
+    @key.setter
+    def key(self, value):
+        with open("settings.json", 'r+') as file:
+            settings_data = json.load(file)
+            settings_data['key'] = value
+
+
+settings = Settings()
 
 
 
-
-Settings.init_settings()
