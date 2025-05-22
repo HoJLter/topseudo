@@ -2,48 +2,48 @@ import json
 from os.path import exists
 
 
-settings_structure = {
-    "key": "",
-    "localisation": "",
-    "pseudocode-type": ""
-}
 
 
 class Settings:
     __instance = None
+    __settings_structure = {
+        "key": "",
+        "localisation": "",
+        "pseudocode-type": ""
+    }
+    _SETTINGS_FILE = "settings.json"
+
     def __new__(cls, *args, **kwargs):
         if cls.__instance is None:
             cls.__instance = super(Settings, cls).__new__(cls)
         return cls.__instance
 
+    def __getitem__(self, item):
+        with open(self._SETTINGS_FILE, "r+") as file:
+            settings_data = json.load(file)
+            return settings_data[item]
 
-    def __init__(self):
-        if exists('settings.json'):
-            with open("settings.json", 'r+') as file:
-                settings_data: dict = json.load(file)
-                if not settings_data.values():
-                    print("нет значений")
-                    json.dump(settings_structure, file)
+    def __setitem__(self, key, value):
+        if key in self.__settings_structure.keys():
+            with open(self._SETTINGS_FILE, "r+") as file:
+                settings_data = json.load(file)
+                file.truncate()
+                settings_data[key] = value
+                json.dump(settings_data, file, indent=4)
         else:
-            print("нет файла")
-            with open("settings.json", 'w') as file:
-                json.dump(settings_structure, file)
+            raise KeyError
 
+    @classmethod
+    def init_settings(cls, overwrite = False):
+        if overwrite or not exists(cls._SETTINGS_FILE):
+            with open(cls._SETTINGS_FILE, "w") as file:
+                json.dump(cls.__settings_structure, file)
+        else:
+            raise
 
-    @property
-    def key(self):
-        with open("settings.json", 'r') as file:
-            settings_data = json.load(file)
-            return settings_data['key']
-
-    @key.setter
-    def key(self, value):
-        with open("settings.json", 'r+') as file:
-            settings_data = json.load(file)
-            settings_data['key'] = value
 
 
 settings = Settings()
-
+print(settings['pseudocode-type'])
 
 
